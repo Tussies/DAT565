@@ -2,15 +2,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import statsmodels.api as sm
-from sklearn import linear_model
-from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import Ridge
-from sklearn.linear_model import Lasso
-from sklearn.metrics import mean_squared_error as mse
-from scipy.stats import linregress
-from statsmodels.formula.api import ols
-from sklearn.model_selection import train_test_split
+
 
 
 
@@ -55,18 +47,12 @@ year_array = np.arange(1860, 2023)
 print(year_array)
 
 
-# Creating a DataFrame with some sample data
-data = {'Year': np.arange(1860, 2023),
-        'Value': sum_of_all}  # Replace this with your actual data
-df = pd.DataFrame(data)
-
-# Plotting a simple line chart
-plt.plot(df['Year'], df['Value'])
+plt.scatter(year_array, sum_of_all)
 
 # Adding labels and title
 plt.xlabel('Year')
-plt.ylabel('Value')
-plt.title('Sample Plot')
+plt.ylabel('Dependency ratio')
+plt.title('Dependency ratio of Sweden between 1860 to 2022')
 
 # Display the plot
 plt.show()
