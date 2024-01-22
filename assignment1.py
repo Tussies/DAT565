@@ -55,5 +55,20 @@ year_array = np.arange(1860, 2023)
 print(year_array)
 
 
+# Creating a DataFrame with some sample data
+data = {'Year': np.arange(1860, 2023),
+        'Value': sum_of_all}  # Replace this with your actual data
+df = pd.DataFrame(data)
+
+# Plotting a simple line chart
+plt.plot(df['Year'], df['Value'])
+
+# Adding labels and title
+plt.xlabel('Year')
+plt.ylabel('Value')
+plt.title('Sample Plot')
+
+# Display the plot
+plt.show()
 
 
