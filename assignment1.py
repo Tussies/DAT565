@@ -2,6 +2,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 
 
 
@@ -51,15 +52,15 @@ year_array = np.arange(1860, 2023)
 #print(year_array)
 
 
-plt.scatter(year_array, sum_of_all)
-
+# Plotting the graph
+plt.scatter(year_array, sum_of_all)#, label='Your Data', color='blue', marker='o')
 
 # Adding labels and title
 plt.xlabel('Year')
 plt.ylabel('Dependency ratio')
 plt.title('Dependency ratio of Sweden between 1860 to 2022')
 
-# Display the plot
+# Show the plot
 plt.show()
 
 
