@@ -1,19 +1,10 @@
-import tarfile
-import glob
 import os
-
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+import glob
 from bs4 import BeautifulSoup
+from itertools import zip_longest
+import pandas as pd
 
-#How
-#tar_file = 'kungalv_slutpriser.tar.gz'
-#extract_folder = 'extracted_html'
-
-#with tarfile.open(tar_file, 'r') as tar:
-#    tar.extractall(extract_folder)
-
+# Directory containing HTML files
 html_folder = 'kungalv_slutpriser'
 
 # List to store all dates
@@ -70,10 +61,22 @@ for html_file_path in html_files:
     for cell in soup.find_all('span', class_='hcl-text hcl-text--medium'):
         closing_price.append(cell.text.strip())
 
+# Find the maximum length among all lists
+max_length = max(len(date_of_sale), len(address), len(location), len(living_area), len(room), len(ancillary_areas), len(plot), len(closing_price))
 
+# Use zip_longest to create a list of tuples with missing values filled with NaN
+data_tuples = zip_longest(date_of_sale, address, location, living_area, room, ancillary_areas, plot, closing_price, fillvalue=None)
 
-# Print the list of all dates
-print(closing_price)
+# Create a DataFrame using the list of tuples
+df = pd.DataFrame(data_tuples, columns=['Date of Sale', 'Address', 'Location', 'Living Area', 'Room', 'Ancillary Areas', 'Plot', 'Closing Price'])
+
+# Save DataFrame to CSV file
+csv_file_path = 'output_data.csv'
+df.to_csv(csv_file_path, index=False)
+
+# Print a message indicating successful CSV creation
+print(f'Data has been saved to {csv_file_path}')
+
 
 #html_map.find('hcl-label hcl-label--state hcl-label--sold-at')
 #html_map.find_all('hcl-label hcl-label--state hcl-label--sold-at')
