@@ -1,60 +1,85 @@
-import tarfile
-
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+import os
+import glob
 from bs4 import BeautifulSoup
+from itertools import zip_longest
+import pandas as pd
+
+# Directory containing HTML files
+html_folder = 'kungalv_slutpriser'
+
+# List to store all dates
+date_of_sale = []
+address = []
+location = []
+living_area = []
+room = []
+ancillary_areas = []
+plot = []
+closing_price = []
+
+# Use glob to get a list of all HTML files in the directory
+html_files = glob.glob(os.path.join(html_folder, '*.html'))
+
+# Iterate through each HTML file
+for html_file_path in html_files:
+    # Read the HTML content
+    with open(html_file_path, 'r') as file:
+        html_content = file.read()
+
+    # Parse the HTML with BeautifulSoup
+    soup = BeautifulSoup(html_content, 'html.parser')
+
+    # Find all dates and append to the list
+    for cell in soup.find_all('span', class_='hcl-label hcl-label--state hcl-label--sold-at'):
+        date_of_sale.append(cell.text.strip())
+    
+    # Find all addresses and append to the list
+    for cell in soup.find_all('h2', class_='sold-property-listing__heading qa-selling-price-title hcl-card__title'):
+        address.append(cell.text.strip())
+
+    # Find all locations and append to the list
+    for cell in soup.find_all('div', class_='sold-property-listing__location'):
+        location.append(cell.text.strip())
+
+    # Find all living areas and append to the list
+    for cell in soup.find_all('div', class_='sold-property-listing__subheading sold-property-listing__area'):
+        living_area.append(cell.text.strip())
+    
+    # Find all rooms and append to the list
+    for cell in soup.find_all('div', class_='sold-property-listing__subheading sold-property-listing__area'):
+        room.append(cell.text.strip())
+    
+    # Find all ancillary areas and append to the list
+    for cell in soup.find_all('span', class_='listing-card__attribute--normal-weight'):
+        ancillary_areas.append(cell.text.strip())
+    
+    # Find all plots and append to the list
+    for cell in soup.find_all('div', class_='sold-property-listing__land-area'):
+        plot.append(cell.text.strip())
+    
+    # Find all closing prices and append to the list
+    for cell in soup.find_all('span', class_='hcl-text hcl-text--medium'):
+        closing_price.append(cell.text.strip())
+
+# Find the maximum length among all lists
+max_length = max(len(date_of_sale), len(address), len(location), len(living_area), len(room), len(ancillary_areas), len(plot), len(closing_price))
+
+# Use zip_longest to create a list of tuples with missing values filled with NaN
+data_tuples = zip_longest(date_of_sale, address, location, living_area, room, ancillary_areas, plot, closing_price, fillvalue=None)
+
+# Create a DataFrame using the list of tuples
+df = pd.DataFrame(data_tuples, columns=['Date of Sale', 'Address', 'Location', 'Living Area', 'Room', 'Ancillary Areas', 'Plot', 'Closing Price'])
+
+# Save DataFrame to CSV file
+csv_file_path = 'output_data.csv'
+df.to_csv(csv_file_path, index=False)
+
+# Print a message indicating successful CSV creation
+print(f'Data has been saved to {csv_file_path}')
 
 
-html_map = 'kungalv_slutpriser/kungalv_slutpris_page_01.html'
-
-
-with open(html_map, 'r') as file:
-    html_content = file.read()
-
-soup = BeautifulSoup(html_content, 'html.parser')
-
-dates = list()
-for cell in soup.find_all('span', class_='hcl-label hcl-label--state hcl-label--sold-at'):
-    dates.append(cell.text.strip())
-
-print(dates)
-
-soup.find('span', class_='row')
-
-import re
-element = soup.find(string=re.compile(r'.*1423,00.*'))
-
-table = element.parent.parent.parent.parent.parent
-table.dates
-
-table.find('span', class_='row')
-
-for cell in table.find('span', class_='row').select('span'):
-    print(cell.text.strip())
-
-values = list()
-for row in table.find_all('span', class_='row'):
-    values.append([cell.text.strip() for cell in row.select('td')])
-
-values = [list(map(lambda s: s.replace('\xa0','').replace(',','.'),row)) for row in values]
-values = [list(map(float,row[:3])) + [int(row[3])] + \
-          list(map(float,row[4:6])) + [int(row[6])] + [row[7]] for row in values]
-
-data = list()
-for (name,val) in zip(dates,values):
-    row = { 'Date' : date,
-            'Adress' : val[0],
-            'Location' : val[1],
-            'Boarea' : val[2],
-            'Biarea' : val[3],
-            'Rum' : val[4],
-            'Plot' : val[5],
-            'Closing price' : val[6]
-          }
-    data.append(row)
-data = pd.DataFrame(data)
-
+#html_map.find('hcl-label hcl-label--state hcl-label--sold-at')
+#html_map.find_all('hcl-label hcl-label--state hcl-label--sold-at')
 
 # date of sale class name = "hcl-label hcl-label--state hcl-label--sold-at"
 # Adress class name = "sold-property-listing__heading qa-selling-price-title hcl-card__title"
@@ -63,4 +88,6 @@ data = pd.DataFrame(data)
 # Area in the form of biarea class name = "listing-card__attribute--normal-weight"
 # Area of the plot class name = "sold-property-listing__land-area"
 # Closing price class name = "hcl-text hcl-text--medium"
+
+#hello
 
