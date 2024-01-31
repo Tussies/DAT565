@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from bs4 import BeautifulSoup
 
 file_path = 'swedish_population_by_year_and_sex_1860-2022.csv'
 df = pd.read_csv(file_path)
