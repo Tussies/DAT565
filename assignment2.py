@@ -3,11 +3,12 @@ import glob
 from bs4 import BeautifulSoup
 from itertools import zip_longest
 import pandas as pd
+import re
 
 # Directory containing HTML files
 html_folder = 'kungalv_slutpriser'
 
-# List to store all dates
+# Lists to store all information
 date_of_sale = []
 address = []
 location = []
@@ -30,8 +31,8 @@ for html_file_path in html_files:
     soup = BeautifulSoup(html_content, 'html.parser')
 
     # Find all dates and append to the list
-    for cell in soup.find_all('span', class_='hcl-label hcl-label--state hcl-label--sold-at'):
-        date_of_sale.append(cell.text.strip())
+    for cell in soup.find_all('span', class_='hcl-label hcl-label--state hcl-label--sold-at', string=lambda t: re.compile(r'Såld(.*)').search(t)):
+        date_of_sale.append(re.compile(r'Såld(.*)').search(cell.text).group(1).strip())
     
     # Find all addresses and append to the list
     for cell in soup.find_all('h2', class_='sold-property-listing__heading qa-selling-price-title hcl-card__title'):
@@ -39,7 +40,11 @@ for html_file_path in html_files:
 
     # Find all locations and append to the list
     for cell in soup.find_all('div', class_='sold-property-listing__location'):
-        location.append(cell.text.strip())
+        match = re.compile(r'VillaVilla\s*([\s\S]*)').search(cell.get_text(strip=True, separator=' '))
+        if match:
+            location.append(match.group(1))
+        else:
+            location.append(None)
 
     # Find all living areas and append to the list
     for cell in soup.find_all('div', class_='sold-property-listing__subheading sold-property-listing__area'):
@@ -68,7 +73,7 @@ max_length = max(len(date_of_sale), len(address), len(location), len(living_area
 data_tuples = zip_longest(date_of_sale, address, location, living_area, room, ancillary_areas, plot, closing_price, fillvalue=None)
 
 # Create a DataFrame using the list of tuples
-df = pd.DataFrame(data_tuples, columns=['Date of Sale', 'Address', 'Location', 'Living Area', 'Room', 'Ancillary Areas', 'Plot', 'Closing Price'])
+df = pd.DataFrame(data_tuples, columns=['Date of Sale', 'Address', 'Location', 'Living Area', 'Room', 'Ancillary Areas()', 'Plot', 'Closing Price'])
 
 # Save DataFrame to CSV file
 csv_file_path = 'output_data.csv'
