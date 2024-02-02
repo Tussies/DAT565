@@ -73,14 +73,53 @@ for html_file_path in html_files:
             ancillary_areas.append(None)
     
     # Find all plots and append to the list
-    for cell1 in soup.find_all('div', class_='hcl-flex--container hcl-flex--gap-2 hcl-flex--justify-space-between hcl-flex--md-justify-flex-start'):
-        
-        for cell2 in soup.find_all('div', class_='sold-property-listing__land-area'):
+    #for cell1 in soup.find_all('div', class_='hcl-flex--container hcl-flex--gap-2 hcl-flex--justify-space-between hcl-flex--md-justify-flex-start'):
+    #    for cell2 in soup.find_all('div', class_='sold-property-listing__land-area'):
+    #        plot.append(cell2.text.strip())
+    #        plot_area_match = re.search(r'^(.*?)\s*m', cell.text)
+
+    for cell in soup.find_all('div', class_='hcl-flex--container hcl-flex--gap-2 hcl-flex--justify-space-between hcl-flex--md-justify-flex-start'):
+        cell2 = cell.find('div', class_='sold-property-listing__land-area')
+        cell3 = cell.find('div', class_='hcl-text hcl-text--medium')
+        cell4 = cell.find('div', class_='sold-property-listing__subheading sold-property-listing__area')
+
+
+
+        if cell2:
             plot.append(cell2.text.strip())
+            #plot_match = re.search(r'^(.*?)\s*m² tomt', cell.text)
+            #if plot_match:
+                #plot.append(plot_match.group(1))
+            #else:
+                # Handle the case where the pattern is not found
+                #plot.append(None)
+        elif cell3:
+            continue
+        elif cell4 and not cell2:
+            plot.append(None)
+
+
     
     # Find all closing prices and append to the list
     for cell in soup.find_all('span', class_='hcl-text hcl-text--medium'):
-        closing_price.append(cell.text.strip())
+        closing_price_text = cell.text.strip()
+
+
+        # Check if the closing price span contains the "%" symbol
+        if "%" not in closing_price_text:
+            closing_price.append(closing_price_text)
+
+
+
+
+    #for cell in soup.find_all('span', class_='hcl-text hcl-text--medium'):
+    #    closing_price_text = cell.text.strip()
+    #    index = closing_price_text.find("%")
+    #    if index != -1:
+    #        result = closing_price_text[index + len("%"):].strip()
+    #        closing_price.append(result)
+    #    else:
+    #        closing_price.append(closing_price_text)
 
 # Find the maximum length among all lists
 max_length = max(len(date_of_sale), len(address), len(location), len(living_area), len(room), len(ancillary_areas), len(plot), len(closing_price))
