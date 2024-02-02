@@ -47,10 +47,14 @@ for html_file_path in html_files:
             location.append(result)
         else:
             location.append(location_text)
-
+            
     # Find all living areas and append to the list
     for cell in soup.find_all('div', class_='sold-property-listing__subheading sold-property-listing__area'):
-        living_area.append(cell.text.strip())
+        area_match = re.search(r'(\d+)', cell.text)
+        if area_match:
+            living_area.append(area_match.group(1))
+        else:
+            living_area.append(None)
     
     # Find all rooms and append to the list
     for cell in soup.find_all('div', class_='sold-property-listing__subheading sold-property-listing__area'):
