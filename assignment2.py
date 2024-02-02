@@ -65,12 +65,18 @@ for html_file_path in html_files:
             room.append(None)
     
     # Find all ancillary areas and append to the list
-    for cell in soup.find_all('span', class_='listing-card__attribute--normal-weight'):
-        ancillary_areas.append(cell.text.strip())
+    for cell in soup.find_all('div', class_='sold-property-listing__subheading sold-property-listing__area'):
+        ancillary_area_match = re.search(r'\+\s*(\d+)', cell.text)
+        if ancillary_area_match:
+            ancillary_areas.append(ancillary_area_match.group(1))
+        else:
+            ancillary_areas.append(None)
     
     # Find all plots and append to the list
-    for cell in soup.find_all('div', class_='sold-property-listing__land-area'):
-        plot.append(cell.text.strip())
+    for cell1 in soup.find_all('div', class_='hcl-flex--container hcl-flex--gap-2 hcl-flex--justify-space-between hcl-flex--md-justify-flex-start'):
+        
+        for cell2 in soup.find_all('div', class_='sold-property-listing__land-area'):
+            plot.append(cell2.text.strip())
     
     # Find all closing prices and append to the list
     for cell in soup.find_all('span', class_='hcl-text hcl-text--medium'):
