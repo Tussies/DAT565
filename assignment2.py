@@ -39,12 +39,14 @@ for html_file_path in html_files:
         address.append(cell.text.strip())
 
     # Find all locations and append to the list
-    for cell in soup.find_all('div', class_='sold-property-listing__location'):
-        match = re.compile(r'VillaVilla\s*([\s\S]*)').search(cell.get_text(strip=True, separator=' '))
-        if match:
-            location.append(match.group(1))
+    for cell in soup.find_all('div', class_='sold-property-listing__location'): 
+        location_text = cell.text.strip()
+        index = location_text.find("VillaVilla")
+        if index != -1:
+            result = location_text[index + len("VillaVilla"):].strip()
+            location.append(result)
         else:
-            location.append(None)
+            location.append(location_text)
 
     # Find all living areas and append to the list
     for cell in soup.find_all('div', class_='sold-property-listing__subheading sold-property-listing__area'):
