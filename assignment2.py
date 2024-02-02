@@ -39,20 +39,30 @@ for html_file_path in html_files:
         address.append(cell.text.strip())
 
     # Find all locations and append to the list
-    for cell in soup.find_all('div', class_='sold-property-listing__location'):
-        match = re.compile(r'VillaVilla\s*([\s\S]*)').search(cell.get_text(strip=True, separator=' '))
-        if match:
-            location.append(match.group(1))
+    for cell in soup.find_all('div', class_='sold-property-listing__location'): 
+        location_text = cell.text.strip()
+        index = location_text.find("VillaVilla")
+        if index != -1:
+            result = location_text[index + len("VillaVilla"):].strip()
+            location.append(result)
         else:
-            location.append(None)
+            location.append(location_text)
 
     # Find all living areas and append to the list
     for cell in soup.find_all('div', class_='sold-property-listing__subheading sold-property-listing__area'):
-        living_area.append(cell.text.strip())
+        area_match = re.search(r'(\d+)', cell.text)
+        if area_match:
+            living_area.append(area_match.group(1))
+        else:
+            living_area.append(None)
     
     # Find all rooms and append to the list
     for cell in soup.find_all('div', class_='sold-property-listing__subheading sold-property-listing__area'):
-        room.append(cell.text.strip())
+        room_match = re.search(r'(\d+)\s+rum', cell.text)
+        if room_match:
+            room.append(room_match.group(1))
+        else:
+            room.append(None)
     
     # Find all ancillary areas and append to the list
     for cell in soup.find_all('span', class_='listing-card__attribute--normal-weight'):
