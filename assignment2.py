@@ -3,7 +3,11 @@ import glob
 from bs4 import BeautifulSoup
 from itertools import zip_longest
 import pandas as pd
+import numpy as np
 import re
+import locale
+
+locale.setlocale(locale.LC_TIME, 'sv_SE')
 
 html_folder = 'kungalv_slutpriser'
 
@@ -26,7 +30,13 @@ for html_file_path in html_files:
     soup = BeautifulSoup(html_content, 'html.parser')
 
     for cell in soup.find_all('span', class_='hcl-label hcl-label--state hcl-label--sold-at', string=lambda t: re.compile(r'Såld(.*)').search(t)):
-        date_of_sale.append(re.compile(r'Såld(.*)').search(cell.text).group(1).strip())
+        date_str = re.compile(r'Såld(.*)').search(cell.text).group(1).strip()
+
+        try:
+            date_pd = pd.to_datetime(date_str, format='%d %B %Y', errors='coerce')
+            date_of_sale.append(date_pd)
+        except ValueError:
+            date_of_sale.append(None)
     
     for cell in soup.find_all('h2', class_='sold-property-listing__heading qa-selling-price-title hcl-card__title'):
         address.append(cell.text.strip())
@@ -34,13 +44,13 @@ for html_file_path in html_files:
     for cell in soup.find_all('div', class_='sold-property-listing__location'): 
         location_text = cell.text.strip()
         index = location_text.find("VillaVilla")
-    if index != -1:
-        result = location_text[index + len("VillaVilla"):].strip()
-        location_result = ' '.join(result.split())
-        location.append(location_result)
-    else:
-        location_result = ' '.join(location_text.split())
-        location.append(location_result)
+        if index != -1:
+            result = location_text[index + len("VillaVilla"):].strip()
+            location_result = ' '.join(result.split())
+            location.append(location_result)
+        else:
+            location_result = ' '.join(location_text.split())
+            location.append(location_result)
 
     for cell in soup.find_all('div', class_='sold-property-listing__subheading sold-property-listing__area'):
         area_match = re.search(r'(\d+)', cell.text)
