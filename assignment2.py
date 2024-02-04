@@ -128,12 +128,15 @@ plt.title('Scatter Plot: Closing Price vs Living Area')
 plt.xlabel('Living Area (m²)')
 plt.ylabel('Closing Price (kr)')
 
+
 plt.figure(figsize=(10, 6))
+ax = plt.axes()
+ax.set_facecolor("blue")
 scatter_plot = plt.scatter(
     df['Living Area (m²)'],
     df['Closing Price (kr)'],
     c=df['Rooms'],
-    cmap='gist_heat',  
+    cmap='binary',  
     alpha=0.8
 )
 cbar = plt.colorbar(scatter_plot)
