@@ -3,12 +3,15 @@ import glob
 from bs4 import BeautifulSoup
 from itertools import zip_longest
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 import re
+import locale
 
-# Directory containing HTML files
+locale.setlocale(locale.LC_TIME, 'sv_SE')
+
 html_folder = 'kungalv_slutpriser'
 
-# Lists to store all information
 date_of_sale = []
 address = []
 location = []
@@ -18,37 +21,38 @@ ancillary_areas = []
 plot = []
 closing_price = []
 
-# Use glob to get a list of all HTML files in the directory
 html_files = glob.glob(os.path.join(html_folder, '*.html'))
 
-# Iterate through each HTML file
 for html_file_path in html_files:
-    # Read the HTML content
+    
     with open(html_file_path, 'r') as file:
         html_content = file.read()
 
-    # Parse the HTML with BeautifulSoup
     soup = BeautifulSoup(html_content, 'html.parser')
 
-    # Find all dates and append to the list
     for cell in soup.find_all('span', class_='hcl-label hcl-label--state hcl-label--sold-at', string=lambda t: re.compile(r'Såld(.*)').search(t)):
-        date_of_sale.append(re.compile(r'Såld(.*)').search(cell.text).group(1).strip())
+        date_str = re.compile(r'Såld(.*)').search(cell.text).group(1).strip()
+
+        try:
+            date_pd = pd.to_datetime(date_str, format='%d %B %Y', errors='coerce')
+            date_of_sale.append(date_pd)
+        except ValueError:
+            date_of_sale.append(None)
     
-    # Find all addresses and append to the list
     for cell in soup.find_all('h2', class_='sold-property-listing__heading qa-selling-price-title hcl-card__title'):
         address.append(cell.text.strip())
 
-    # Find all locations and append to the list
     for cell in soup.find_all('div', class_='sold-property-listing__location'): 
         location_text = cell.text.strip()
         index = location_text.find("VillaVilla")
         if index != -1:
             result = location_text[index + len("VillaVilla"):].strip()
-            location.append(result)
+            location_result = ' '.join(result.split())
+            location.append(location_result)
         else:
-            location.append(location_text)
+            location_result = ' '.join(location_text.split())
+            location.append(location_result)
 
-    # Find all living areas and append to the list
     for cell in soup.find_all('div', class_='sold-property-listing__subheading sold-property-listing__area'):
         area_match = re.search(r'(\d+)', cell.text)
         if area_match:
@@ -56,7 +60,6 @@ for html_file_path in html_files:
         else:
             living_area.append(None)
     
-    # Find all rooms and append to the list
     for cell in soup.find_all('div', class_='sold-property-listing__subheading sold-property-listing__area'):
         room_match = re.search(r'(\d+)\s+rum', cell.text)
         if room_match:
@@ -64,7 +67,6 @@ for html_file_path in html_files:
         else:
             room.append(None)
     
-    # Find all ancillary areas and append to the list
     for cell in soup.find_all('div', class_='sold-property-listing__subheading sold-property-listing__area'):
         ancillary_area_match = re.search(r'\+\s*(\d+)', cell.text)
         if ancillary_area_match:
@@ -72,82 +74,75 @@ for html_file_path in html_files:
         else:
             ancillary_areas.append(None)
     
-    # Find all plots and append to the list
-    #for cell1 in soup.find_all('div', class_='hcl-flex--container hcl-flex--gap-2 hcl-flex--justify-space-between hcl-flex--md-justify-flex-start'):
-    #    for cell2 in soup.find_all('div', class_='sold-property-listing__land-area'):
-    #        plot.append(cell2.text.strip())
-    #        plot_area_match = re.search(r'^(.*?)\s*m', cell.text)
-
     for cell in soup.find_all('div', class_='hcl-flex--container hcl-flex--gap-2 hcl-flex--justify-space-between hcl-flex--md-justify-flex-start'):
         cell2 = cell.find('div', class_='sold-property-listing__land-area')
         cell3 = cell.find('div', class_='hcl-text hcl-text--medium')
         cell4 = cell.find('div', class_='sold-property-listing__subheading sold-property-listing__area')
 
-
-
         if cell2:
-            plot.append(cell2.text.strip())
-            #plot_match = re.search(r'^(.*?)\s*m² tomt', cell.text)
-            #if plot_match:
-                #plot.append(plot_match.group(1))
-            #else:
-                # Handle the case where the pattern is not found
-                #plot.append(None)
+            plot_text = ''.join(filter(str.isdigit, cell2.text.strip())).replace("²", "")
+            plot.append(plot_text if plot_text else None)
         elif cell3:
             continue
         elif cell4 and not cell2:
             plot.append(None)
-
-
     
-    # Find all closing prices and append to the list
     for cell in soup.find_all('span', class_='hcl-text hcl-text--medium'):
         closing_price_text = cell.text.strip()
 
+        cleaned_price = re.sub(r'Slutpris|kr|\D', '', closing_price_text)
 
-        # Check if the closing price span contains the "%" symbol
         if "%" not in closing_price_text:
-            closing_price.append(closing_price_text)
+            closing_price.append(float(cleaned_price) if cleaned_price else None)
 
-
-
-
-    #for cell in soup.find_all('span', class_='hcl-text hcl-text--medium'):
-    #    closing_price_text = cell.text.strip()
-    #    index = closing_price_text.find("%")
-    #    if index != -1:
-    #        result = closing_price_text[index + len("%"):].strip()
-    #        closing_price.append(result)
-    #    else:
-    #        closing_price.append(closing_price_text)
-
-# Find the maximum length among all lists
 max_length = max(len(date_of_sale), len(address), len(location), len(living_area), len(room), len(ancillary_areas), len(plot), len(closing_price))
 
-# Use zip_longest to create a list of tuples with missing values filled with NaN
 data_tuples = zip_longest(date_of_sale, address, location, living_area, room, ancillary_areas, plot, closing_price, fillvalue=None)
 
-# Create a DataFrame using the list of tuples
-df = pd.DataFrame(data_tuples, columns=['Date of Sale', 'Address', 'Location', 'Living Area', 'Room', 'Ancillary Areas()', 'Plot', 'Closing Price'])
+df = pd.DataFrame(data_tuples, columns=['Date of Sale', 'Address', 'Location', 'Living Area (m²)', 'Rooms', 'Ancillary Areas (m²)', 'Plot (m²)', 'Closing Price (kr)'])
 
-# Save DataFrame to CSV file
+numeric_columns = ['Living Area (m²)', 'Rooms', 'Ancillary Areas (m²)', 'Plot (m²)', 'Closing Price (kr)']
+df[numeric_columns] = df[numeric_columns].apply(pd.to_numeric, errors='coerce')
+
 csv_file_path = 'output_data.csv'
 df.to_csv(csv_file_path, index=False)
 
-# Print a message indicating successful CSV creation
 print(f'Data has been saved to {csv_file_path}')
 
+df['Closing Price (kr)'] = pd.to_numeric(df['Closing Price (kr)'], errors='coerce')
 
-#html_map.find('hcl-label hcl-label--state hcl-label--sold-at')
-#html_map.find_all('hcl-label hcl-label--state hcl-label--sold-at')
+closing_price_summary = df['Closing Price (kr)'].describe()
+pd.set_option('display.float_format', lambda x: f'{x:.0f}')
 
-# date of sale class name = "hcl-label hcl-label--state hcl-label--sold-at"
-# Adress class name = "sold-property-listing__heading qa-selling-price-title hcl-card__title"
-# Location of the estate class name = "property-icon property-icon--result"
-# Area in the form of boarea och rum class name = "sold-property-listing__subheading sold-property-listing__area"
-# Area in the form of biarea class name = "listing-card__attribute--normal-weight"
-# Area of the plot class name = "sold-property-listing__land-area"
-# Closing price class name = "hcl-text hcl-text--medium"
+print("Five-Number Summary of Closing Prices:")
+print(closing_price_summary)
 
-#hello
+plt.hist(df['Closing Price (kr)'], bins=50, color='red', edgecolor='black')
+plt.title('Histogram of Closing Prices')
+plt.xlabel('Closing Price (kr)')
+plt.ylabel('Frequency')
 
+plt.figure(figsize=(10, 6))
+plt.scatter(df['Living Area (m²)'], df['Closing Price (kr)'], alpha=0.5)
+plt.title('Scatter Plot: Closing Price vs Living Area')
+plt.xlabel('Living Area (m²)')
+plt.ylabel('Closing Price (kr)')
+
+
+plt.figure(figsize=(10, 6))
+ax = plt.axes()
+ax.set_facecolor("blue")
+scatter_plot = plt.scatter(
+    df['Living Area (m²)'],
+    df['Closing Price (kr)'],
+    c=df['Rooms'],
+    cmap='binary',  
+    alpha=0.8
+)
+cbar = plt.colorbar(scatter_plot)
+cbar.set_label('Number of Rooms')
+plt.title('Scatter Plot: Closing Price vs Living Area (Colorized by Number of Rooms)')
+plt.xlabel('Living Area (m²)')
+plt.ylabel('Closing Price (kr)')
+
+plt.show()
