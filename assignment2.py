@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from itertools import zip_longest
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 import re
 import locale
 
@@ -107,3 +108,38 @@ csv_file_path = 'output_data.csv'
 df.to_csv(csv_file_path, index=False)
 
 print(f'Data has been saved to {csv_file_path}')
+
+df['Closing Price (kr)'] = pd.to_numeric(df['Closing Price (kr)'], errors='coerce')
+
+closing_price_summary = df['Closing Price (kr)'].describe()
+pd.set_option('display.float_format', lambda x: f'{x:.0f}')
+
+print("Five-Number Summary of Closing Prices:")
+print(closing_price_summary)
+
+plt.hist(df['Closing Price (kr)'], bins=50, color='red', edgecolor='black')
+plt.title('Histogram of Closing Prices')
+plt.xlabel('Closing Price (kr)')
+plt.ylabel('Frequency')
+
+plt.figure(figsize=(10, 6))
+plt.scatter(df['Living Area (m²)'], df['Closing Price (kr)'], alpha=0.5)
+plt.title('Scatter Plot: Closing Price vs Living Area')
+plt.xlabel('Living Area (m²)')
+plt.ylabel('Closing Price (kr)')
+
+plt.figure(figsize=(10, 6))
+scatter_plot = plt.scatter(
+    df['Living Area (m²)'],
+    df['Closing Price (kr)'],
+    c=df['Rooms'],
+    cmap='plasma',  
+    alpha=0.7
+)
+cbar = plt.colorbar(scatter_plot)
+cbar.set_label('Number of Rooms')
+plt.title('Scatter Plot: Closing Price vs Living Area (Colorized by Number of Rooms)')
+plt.xlabel('Living Area (m²)')
+plt.ylabel('Closing Price (kr)')
+
+plt.show()
