@@ -101,6 +101,8 @@ data_tuples = zip_longest(date_of_sale, address, location, living_area, room, an
 
 df = pd.DataFrame(data_tuples, columns=['Date of Sale', 'Address', 'Location', 'Living Area (m²)', 'Rooms', 'Ancillary Areas (m²)', 'Plot (m²)', 'Closing Price (kr)'])
 
+df['Total Area (m²)'] = df.apply(lambda row: row['Living Area (m²)'] + row['Ancillary Areas (m²)'] if pd.notna(row['Living Area (m²)']) and pd.notna(row['Ancillary Areas (m²)']) else np.nan, axis=1)
+
 numeric_columns = ['Living Area (m²)', 'Rooms', 'Ancillary Areas (m²)', 'Plot (m²)', 'Closing Price (kr)']
 df[numeric_columns] = df[numeric_columns].apply(pd.to_numeric, errors='coerce')
 
@@ -117,21 +119,29 @@ pd.set_option('display.float_format', lambda x: f'{x:.0f}')
 print("Five-Number Summary of Closing Prices:")
 print(closing_price_summary)
 
+plt.figure()
 plt.hist(df['Closing Price (kr)'], bins=50, color='red', edgecolor='black')
+plt.yscale('linear') 
+
+plt.ticklabel_format(style='plain', axis='y')
 plt.title('Histogram of Closing Prices')
 plt.xlabel('Closing Price (kr)')
 plt.ylabel('Frequency')
+plt.savefig('histogram_plot.pdf', format='pdf')
 
 plt.figure(figsize=(10, 6))
 plt.scatter(df['Living Area (m²)'], df['Closing Price (kr)'], alpha=0.5)
-plt.title('Scatter Plot: Closing Price vs Living Area')
+plt.yscale('linear')
+
+plt.ticklabel_format(style='plain', axis='y')
+plt.title('Closing Price and Living Area')
 plt.xlabel('Living Area (m²)')
 plt.ylabel('Closing Price (kr)')
-
+plt.savefig('scatter_plot.pdf', format='pdf')
 
 plt.figure(figsize=(10, 6))
 ax = plt.axes()
-ax.set_facecolor("blue")
+ax.set_facecolor("pink")
 scatter_plot = plt.scatter(
     df['Living Area (m²)'],
     df['Closing Price (kr)'],
@@ -141,8 +151,12 @@ scatter_plot = plt.scatter(
 )
 cbar = plt.colorbar(scatter_plot)
 cbar.set_label('Number of Rooms')
-plt.title('Scatter Plot: Closing Price vs Living Area (Colorized by Number of Rooms)')
+plt.yscale('linear') 
+
+plt.ticklabel_format(style='plain', axis='y')
+plt.title('Closing Price and Living Area Colorized by the Number of Rooms')
 plt.xlabel('Living Area (m²)')
 plt.ylabel('Closing Price (kr)')
+plt.savefig('colorized_scatter_plot.pdf', format='pdf')
 
 plt.show()
