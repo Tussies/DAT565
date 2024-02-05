@@ -151,11 +151,12 @@ plt.savefig('scatter_plot.pdf', format='pdf')
 
 plt.figure(figsize=(10, 6))
 ax = plt.axes()
+ax.set_facecolor("gray")
 scatter_plot = plt.scatter(
     df['Living Area (m²)'],
     df['Closing Price (kr)'],
     c=df['Rooms'],
-    cmap='plasma_r',  
+    cmap='hot',  
     alpha=0.8
 )
 cbar = plt.colorbar(scatter_plot)
