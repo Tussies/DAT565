@@ -106,70 +106,74 @@ data_list = [
     for dte, addr, loc, are, rm, anc_area, plt, pr in zip(date_of_sale, address, location, living_area, room, ancillary_areas, plot, closing_price)
 ]
 
-df = pd.DataFrame(data_list, columns=['Date of Sale', 'Address', 'Location', 'Living Area (m²)', 'Rooms', 'Ancillary Areas (m²)', 'Plot (m²)', 'Closing Price (kr)'])
-
-df['Total Area (m²)'] = df.apply(lambda row: row['Living Area (m²)'] + row['Ancillary Areas (m²)'] if pd.notna(row['Living Area (m²)']) and pd.notna(row['Ancillary Areas (m²)']) else np.nan, axis=1)
+df = pd.DataFrame({
+    'Date of Sale': date_of_sale,
+    'Address': address,
+    'Location': location,
+    'Living Area (m²)': living_area,
+    'Rooms': room,
+    'Ancillary Areas (m²)': ancillary_areas,
+    'Plot (m²)': plot,
+    'Closing Price (kr)': closing_price
+})
 
 numeric_columns = ['Living Area (m²)', 'Rooms', 'Ancillary Areas (m²)', 'Plot (m²)', 'Closing Price (kr)']
 df[numeric_columns] = df[numeric_columns].apply(pd.to_numeric, errors='coerce')
-df['Closing Price (kr)'] = pd.to_numeric(df['Closing Price (kr)'], errors='coerce')
+
+df['Total Area (m²)'] = df['Living Area (m²)'] + df['Ancillary Areas (m²)']
 
 csv_file_path = 'output_data.csv'
 df.to_csv(csv_file_path, index=False)
 
 print(f'Data has been saved to {csv_file_path}')
 
-closing_price_summary = df['Closing Price (kr)'].describe()
+df_2022 = df[df['Date of Sale'].dt.year == 2022]
+
+closing_price_summary_2022 = df_2022['Closing Price (kr)'].describe()
 pd.set_option('display.float_format', lambda x: f'{x:.0f}')
 
-print("Five-Number Summary of Closing Prices:")
-print(closing_price_summary)
+print("Five-Number Summary of Closing Prices for 2022:")
+print(closing_price_summary_2022)
 
 plt.figure()
-plt.hist(df['Closing Price (kr)'], bins=50, color='red', edgecolor='black')
-plt.yscale('linear')
-
-plt.ticklabel_format(style='plain', axis='y')
-plt.title('Histogram of Closing Prices')
+plt.hist(df_2022['Closing Price (kr)'], bins=50, color='red', edgecolor='black')
+plt.xscale('linear')
+plt.ticklabel_format(style='plain', axis='x')
+plt.title('Histogram of Closing Prices Year 2022')
 plt.xlabel('Closing Price (kr)')
 plt.ylabel('Frequency')
-
+plt.xticks(np.arange(0, df_2022['Closing Price (kr)'].max() + 1000000, 2000000))
+plt.yticks(np.arange(0, 16, 2))
 plt.savefig('histogram_plot.pdf', format='pdf')
 
 plt.figure(figsize=(10, 6))
-plt.scatter(df['Living Area (m²)'], df['Closing Price (kr)'], alpha=0.5)
+plt.scatter(df_2022['Living Area (m²)'], df_2022['Closing Price (kr)'], alpha=0.5)
 plt.yscale('linear')
-
 plt.ticklabel_format(style='plain', axis='y')
-plt.title('Closing Price and Living Area')
+plt.title('Closing Price and Living Area Year 2022')
 plt.xlabel('Living Area (m²)')
 plt.ylabel('Closing Price (kr)')
-
-plt.yticks(np.arange(df['Closing Price (kr)'].min(), df['Closing Price (kr)'].max(), 2000000))
-
+plt.yticks(np.arange(0, df_2022['Closing Price (kr)'].max() + 1000000, 1000000))
 plt.savefig('scatter_plot.pdf', format='pdf')
 
 plt.figure(figsize=(10, 6))
 ax = plt.axes()
 ax.set_facecolor("gray")
-scatter_plot = plt.scatter(
-    df['Living Area (m²)'],
-    df['Closing Price (kr)'],
-    c=df['Rooms'],
+scatter_plot_2022 = plt.scatter(
+    df_2022['Living Area (m²)'],
+    df_2022['Closing Price (kr)'],
+    c=df_2022['Rooms'],
     cmap='hot',  
     alpha=0.8
 )
-cbar = plt.colorbar(scatter_plot)
+cbar = plt.colorbar(scatter_plot_2022)
 cbar.set_label('Number of Rooms')
 plt.yscale('linear')
-
 plt.ticklabel_format(style='plain', axis='y')
-plt.title('Closing Price and Living Area Colorized by the Number of Rooms')
+plt.title('Closing Price and Living Area Colorized by the Number of Rooms Year 2022')
 plt.xlabel('Living Area (m²)')
 plt.ylabel('Closing Price (kr)')
-
-plt.yticks(np.arange(df['Closing Price (kr)'].min(), df['Closing Price (kr)'].max(), 2000000))
-
+plt.yticks(np.arange(0, df_2022['Closing Price (kr)'].max() + 1000000, 1000000))
 plt.savefig('colorized_scatter_plot.pdf', format='pdf')
 
 plt.show()
