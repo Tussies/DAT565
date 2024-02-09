@@ -1,6 +1,9 @@
 import os
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB, BernoulliNB
+from sklearn.metrics import precision_score, recall_score, confusion_matrix
+import pandas as pd
 
 def load_data(folder_path):
     data = []
@@ -26,20 +29,55 @@ y_train = [0] * len(easyHamTrain) + [1] * len(hardHamTrain) + [2] * len(spamTrai
 X_test = easyHamTest + hardHamTest + spamTest
 y_test = [0] * len(easyHamTest) + [1] * len(hardHamTest) + [2] * len(spamTest)
 
+X_train_easy = easyHamTrain + spamTrain
+X_test_easy = easyHamTest + spamTest
+
+y_train_easy = [0] * len(easyHamTrain) + [1] * len(spamTrain)
+y_test_easy = [0] * len(easyHamTest) + [1] * len(spamTest)
+
 vectorizer = CountVectorizer()
-X_train_vectorized = vectorizer.fit_transform(X_train)
-X_test_vectorized = vectorizer.transform(X_test)
+X_train_vectorized_easy = vectorizer.fit_transform(X_train_easy)
+X_test_vectorized_easy = vectorizer.transform(X_test_easy)
 
-print("Sizes of Training and Testing Sets:")
-print("Easy Ham: Train =", len(easyHamTrain), "Test =", len(easyHamTest))
-print("Hard Ham: Train =", len(hardHamTrain), "Test =", len(hardHamTest))
-print("Spam: Train =", len(spamTrain), "Test =", len(spamTest))
+classifierMNB = MultinomialNB()
+classifierMNB.fit(X_train_vectorized_easy, y_train_easy)
 
-total_emails_before_split = len(easy_ham) + len(hard_ham) + len(spam)
-total_emails_after_split = len(easyHamTrain) + len(easyHamTest) + len(hardHamTrain) + len(hardHamTest) + len(spamTrain) + len(spamTest)
+classifierBNB = BernoulliNB()
+classifierBNB.fit(X_train_vectorized_easy, y_train_easy)
 
-print("\nTotal number of emails before split:", total_emails_before_split)
-print("Total number of emails after split:", total_emails_after_split)
+predictionsMNB = classifierMNB.predict(X_test_vectorized_easy)
+predictionsBNB = classifierBNB.predict(X_test_vectorized_easy)
+print(predictionsMNB)
+print(predictionsBNB)
 
-print("\nShape of Vectorized Training Data:", X_train_vectorized.shape)
-print("Shape of Vectorized Testing Data:", X_test_vectorized.shape)
+scoreMNB = classifierMNB.score(X_test_vectorized_easy, y_test_easy)
+print("Accuracy for Multinomial Naive Bayes:", scoreMNB)
+
+scoreBNB = classifierBNB.score(X_test_vectorized_easy, y_test_easy)
+print("Accuracy for Bernoulli Naive Bayes:", scoreBNB)
+
+precisionMNB = precision_score(y_test_easy, predictionsMNB, average='binary', pos_label=1)
+print("Precision for Multinomial Naive Bayes:", precisionMNB)
+
+precisionBNB = precision_score(y_test_easy, predictionsBNB, average='binary', pos_label=1)
+print("Precision for Bernoulli Naive Bayes:", precisionBNB)
+
+recallMNB = recall_score(y_test_easy, predictionsMNB, average='binary', pos_label=1)
+print("Recall for Multinomial Naive Bayes:", recallMNB)
+
+recallBNB = recall_score(y_test_easy, predictionsBNB, average='binary', pos_label=1)
+print("Recall for Bernoulli Naive Bayes:", recallBNB)
+
+conf_matrix_MNB = confusion_matrix(y_test_easy, predictionsMNB)
+conf_matrix_df_MNB = pd.DataFrame(conf_matrix_MNB, index=['Actual Negative', 'Actual Positive'], columns=['Predicted Negative', 'Predicted Positive'])
+conf_matrix_df_MNB.loc['Total'] = conf_matrix_df_MNB.sum()
+conf_matrix_df_MNB['Total'] = conf_matrix_df_MNB.sum(axis=1)
+print("Confusion Matrix for Multinomial Naive Bayes:")
+print(conf_matrix_df_MNB)
+
+conf_matrix_BNB = confusion_matrix(y_test_easy, predictionsBNB)
+conf_matrix_df_BNB = pd.DataFrame(conf_matrix_BNB, index=['Actual Negative', 'Actual Positive'], columns=['Predicted Negative', 'Predicted Positive'])
+conf_matrix_df_BNB.loc['Total'] = conf_matrix_df_BNB.sum()
+conf_matrix_df_BNB['Total'] = conf_matrix_df_BNB.sum(axis=1)
+print("\nConfusion Matrix for Bernoulli Naive Bayes:")
+print(conf_matrix_df_BNB)
