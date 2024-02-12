@@ -29,53 +29,54 @@ y_train = [0] * len(easyHamTrain) + [1] * len(hardHamTrain) + [2] * len(spamTrai
 X_test = easyHamTest + hardHamTest + spamTest
 y_test = [0] * len(easyHamTest) + [1] * len(hardHamTest) + [2] * len(spamTest)
 
-X_train_easy = easyHamTrain + spamTrain
-X_test_easy = easyHamTest + spamTest
+X_train_hard = hardHamTrain + spamTrain
+X_test_hard = hardHamTest + spamTest
 
-y_train_easy = [0] * len(easyHamTrain) + [1] * len(spamTrain)
-y_test_easy = [0] * len(easyHamTest) + [1] * len(spamTest)
+y_train_hard = [0] * len(hardHamTrain) + [1] * len(spamTrain)
+y_test_hard = [0] * len(hardHamTest) + [1] * len(spamTest)
 
 vectorizer = CountVectorizer()
-X_train_vectorized_easy = vectorizer.fit_transform(X_train_easy)
-X_test_vectorized_easy = vectorizer.transform(X_test_easy)
+X_train_vectorized_hard = vectorizer.fit_transform(X_train_hard)
+X_test_vectorized_hard = vectorizer.transform(X_test_hard)
 
 classifierMNB = MultinomialNB()
-classifierMNB.fit(X_train_vectorized_easy, y_train_easy)
+classifierMNB.fit(X_train_vectorized_hard, y_train_hard)
 
 classifierBNB = BernoulliNB()
-classifierBNB.fit(X_train_vectorized_easy, y_train_easy)
+classifierBNB.fit(X_train_vectorized_hard, y_train_hard)
 
-predictionsMNB = classifierMNB.predict(X_test_vectorized_easy)
-predictionsBNB = classifierBNB.predict(X_test_vectorized_easy)
+predictionsMNB = classifierMNB.predict(X_test_vectorized_hard)
+predictionsBNB = classifierBNB.predict(X_test_vectorized_hard)
 print(predictionsMNB)
 print(predictionsBNB)
 
-scoreMNB = classifierMNB.score(X_test_vectorized_easy, y_test_easy)
+scoreMNB = classifierMNB.score(X_test_vectorized_hard, y_test_hard)
 print("Accuracy for Multinomial Naive Bayes:", scoreMNB)
 
-scoreBNB = classifierBNB.score(X_test_vectorized_easy, y_test_easy)
-print("Accuracy for Bernoulli Naive Bayes:", scoreBNB)
-
-precisionMNB = precision_score(y_test_easy, predictionsMNB, average='binary', pos_label=1)
+precisionMNB = precision_score(y_test_hard, predictionsMNB, average='binary', pos_label=1)
 print("Precision for Multinomial Naive Bayes:", precisionMNB)
 
-precisionBNB = precision_score(y_test_easy, predictionsBNB, average='binary', pos_label=1)
-print("Precision for Bernoulli Naive Bayes:", precisionBNB)
-
-recallMNB = recall_score(y_test_easy, predictionsMNB, average='binary', pos_label=1)
+recallMNB = recall_score(y_test_hard, predictionsMNB, average='binary', pos_label=1)
 print("Recall for Multinomial Naive Bayes:", recallMNB)
 
-recallBNB = recall_score(y_test_easy, predictionsBNB, average='binary', pos_label=1)
+
+scoreBNB = classifierBNB.score(X_test_vectorized_hard, y_test_hard)
+print("Accuracy for Bernoulli Naive Bayes:", scoreBNB)
+
+precisionBNB = precision_score(y_test_hard, predictionsBNB, average='binary', pos_label=1)
+print("Precision for Bernoulli Naive Bayes:", precisionBNB)
+
+recallBNB = recall_score(y_test_hard, predictionsBNB, average='binary', pos_label=1)
 print("Recall for Bernoulli Naive Bayes:", recallBNB)
 
-conf_matrix_MNB = confusion_matrix(y_test_easy, predictionsMNB)
+conf_matrix_MNB = confusion_matrix(y_test_hard, predictionsMNB)
 conf_matrix_df_MNB = pd.DataFrame(conf_matrix_MNB, index=['Actual Negative', 'Actual Positive'], columns=['Predicted Negative', 'Predicted Positive'])
 conf_matrix_df_MNB.loc['Total'] = conf_matrix_df_MNB.sum()
 conf_matrix_df_MNB['Total'] = conf_matrix_df_MNB.sum(axis=1)
 print("Confusion Matrix for Multinomial Naive Bayes:")
 print(conf_matrix_df_MNB)
 
-conf_matrix_BNB = confusion_matrix(y_test_easy, predictionsBNB)
+conf_matrix_BNB = confusion_matrix(y_test_hard, predictionsBNB)
 conf_matrix_df_BNB = pd.DataFrame(conf_matrix_BNB, index=['Actual Negative', 'Actual Positive'], columns=['Predicted Negative', 'Predicted Positive'])
 conf_matrix_df_BNB.loc['Total'] = conf_matrix_df_BNB.sum()
 conf_matrix_df_BNB['Total'] = conf_matrix_df_BNB.sum(axis=1)
