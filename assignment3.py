@@ -19,15 +19,11 @@ easy_ham = load_data('easy_ham')
 hard_ham = load_data('hard_ham')
 spam = load_data('spam')
 
+
+#Problem 1B & 2
 easyHamTrain, easyHamTest = train_test_split(easy_ham, test_size=0.25, random_state=42)
 hardHamTrain, hardHamTest = train_test_split(hard_ham, test_size=0.25, random_state=42)
 spamTrain, spamTest = train_test_split(spam, test_size=0.25, random_state=42)
-
-X_train = easyHamTrain + hardHamTrain + spamTrain
-y_train = [0] * len(easyHamTrain) + [1] * len(hardHamTrain) + [2] * len(spamTrain)
-
-X_test = easyHamTest + hardHamTest + spamTest
-y_test = [0] * len(easyHamTest) + [1] * len(hardHamTest) + [2] * len(spamTest)
 
 X_train_easy = easyHamTrain + spamTrain
 X_test_easy = easyHamTest + spamTest
@@ -39,6 +35,16 @@ vectorizer = CountVectorizer()
 X_train_vectorized_easy = vectorizer.fit_transform(X_train_easy)
 X_test_vectorized_easy = vectorizer.transform(X_test_easy)
 
+X_train_hard = hardHamTrain + spamTrain
+X_test_hard = hardHamTest + spamTest
+
+y_train_hard = [1] * len(hardHamTrain) + [2] * len(spamTrain)
+y_test_hard = [1] * len(hardHamTest) + [2] * len(spamTest)
+
+X_train_vectorized_hard = vectorizer.transform(X_train_hard)
+X_test_vectorized_hard = vectorizer.transform(X_test_hard)
+
+#Problem 3 & 4
 classifierMNB = MultinomialNB()
 classifierMNB.fit(X_train_vectorized_easy, y_train_easy)
 
@@ -49,6 +55,17 @@ predictionsMNB = classifierMNB.predict(X_test_vectorized_easy)
 predictionsBNB = classifierBNB.predict(X_test_vectorized_easy)
 print(predictionsMNB)
 print(predictionsBNB)
+
+classifierMNB_hard = MultinomialNB()
+classifierMNB_hard.fit(X_train_vectorized_hard, y_train_hard)
+
+classifierBNB_hard = BernoulliNB()
+classifierBNB_hard.fit(X_train_vectorized_hard, y_train_hard)
+
+predictionsMNB_hard = classifierMNB_hard.predict(X_test_vectorized_hard)
+predictionsBNB_hard = classifierBNB_hard.predict(X_test_vectorized_hard)
+print(predictionsMNB_hard)
+print(predictionsBNB_hard)
 
 scoreMNB = classifierMNB.score(X_test_vectorized_easy, y_test_easy)
 print("Accuracy for Multinomial Naive Bayes:", scoreMNB)
@@ -81,23 +98,6 @@ conf_matrix_df_BNB.loc['Total'] = conf_matrix_df_BNB.sum()
 conf_matrix_df_BNB['Total'] = conf_matrix_df_BNB.sum(axis=1)
 print("\nConfusion Matrix for Bernoulli Naive Bayes:")
 print(conf_matrix_df_BNB)
-
-X_train_hard = hardHamTrain + spamTrain
-X_test_hard = hardHamTest + spamTest
-
-y_train_hard = [1] * len(hardHamTrain) + [2] * len(spamTrain)
-y_test_hard = [1] * len(hardHamTest) + [2] * len(spamTest)
-
-X_train_vectorized_hard = vectorizer.transform(X_train_hard)
-X_test_vectorized_hard = vectorizer.transform(X_test_hard)
-
-classifierMNB_hard = MultinomialNB()
-classifierMNB_hard.fit(X_train_vectorized_hard, y_train_hard)
-predictionsMNB_hard = classifierMNB_hard.predict(X_test_vectorized_hard)
-
-classifierBNB_hard = BernoulliNB()
-classifierBNB_hard.fit(X_train_vectorized_hard, y_train_hard)
-predictionsBNB_hard = classifierBNB_hard.predict(X_test_vectorized_hard)
 
 scoreMNB_hard = classifierMNB_hard.score(X_test_vectorized_hard, y_test_hard)
 print("\nAccuracy for Multinomial Naive Bayes with Hard Ham:", scoreMNB_hard)
