@@ -81,3 +81,52 @@ conf_matrix_df_BNB.loc['Total'] = conf_matrix_df_BNB.sum()
 conf_matrix_df_BNB['Total'] = conf_matrix_df_BNB.sum(axis=1)
 print("\nConfusion Matrix for Bernoulli Naive Bayes:")
 print(conf_matrix_df_BNB)
+
+X_train_hard = hardHamTrain + spamTrain
+X_test_hard = hardHamTest + spamTest
+
+y_train_hard = [1] * len(hardHamTrain) + [2] * len(spamTrain)
+y_test_hard = [1] * len(hardHamTest) + [2] * len(spamTest)
+
+X_train_vectorized_hard = vectorizer.transform(X_train_hard)
+X_test_vectorized_hard = vectorizer.transform(X_test_hard)
+
+classifierMNB_hard = MultinomialNB()
+classifierMNB_hard.fit(X_train_vectorized_hard, y_train_hard)
+predictionsMNB_hard = classifierMNB_hard.predict(X_test_vectorized_hard)
+
+classifierBNB_hard = BernoulliNB()
+classifierBNB_hard.fit(X_train_vectorized_hard, y_train_hard)
+predictionsBNB_hard = classifierBNB_hard.predict(X_test_vectorized_hard)
+
+scoreMNB_hard = classifierMNB_hard.score(X_test_vectorized_hard, y_test_hard)
+print("\nAccuracy for Multinomial Naive Bayes with Hard Ham:", scoreMNB_hard)
+
+precisionMNB_hard = precision_score(y_test_hard, predictionsMNB_hard, average='binary', pos_label=2)
+print("Precision for Multinomial Naive Bayes with Hard Ham:", precisionMNB_hard)
+
+recallMNB_hard = recall_score(y_test_hard, predictionsMNB_hard, average='binary', pos_label=2)
+print("Recall for Multinomial Naive Bayes with Hard Ham:", recallMNB_hard)
+
+conf_matrix_MNB_hard = confusion_matrix(y_test_hard, predictionsMNB_hard)
+conf_matrix_df_MNB_hard = pd.DataFrame(conf_matrix_MNB_hard, index=['Actual Negative', 'Actual Positive'], columns=['Predicted Negative', 'Predicted Positive'])
+conf_matrix_df_MNB_hard.loc['Total'] = conf_matrix_df_MNB_hard.sum()
+conf_matrix_df_MNB_hard['Total'] = conf_matrix_df_MNB_hard.sum(axis=1)
+print("\nConfusion Matrix for Multinomial Naive Bayes with Hard Ham:")
+print(conf_matrix_df_MNB_hard)
+
+scoreBNB_hard = classifierBNB_hard.score(X_test_vectorized_hard, y_test_hard)
+print("\nAccuracy for Bernoulli Naive Bayes with Hard Ham:", scoreBNB_hard)
+
+precisionBNB_hard = precision_score(y_test_hard, predictionsBNB_hard, average='binary', pos_label=2)
+print("Precision for Bernoulli Naive Bayes with Hard Ham:", precisionBNB_hard)
+
+recallBNB_hard = recall_score(y_test_hard, predictionsBNB_hard, average='binary', pos_label=2)
+print("Recall for Bernoulli Naive Bayes with Hard Ham:", recallBNB_hard)
+
+conf_matrix_BNB_hard = confusion_matrix(y_test_hard, predictionsBNB_hard)
+conf_matrix_df_BNB_hard = pd.DataFrame(conf_matrix_BNB_hard, index=['Actual Negative', 'Actual Positive'], columns=['Predicted Negative', 'Predicted Positive'])
+conf_matrix_df_BNB_hard.loc['Total'] = conf_matrix_df_BNB_hard.sum()
+conf_matrix_df_BNB_hard['Total'] = conf_matrix_df_BNB_hard.sum(axis=1)
+print("\nConfusion Matrix for Bernoulli Naive Bayes with Hard Ham:")
+print(conf_matrix_df_BNB_hard)
