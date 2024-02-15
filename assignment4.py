@@ -3,8 +3,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
-import matplotlib.pyplot as plt
-from sklearn.metrics import r2_score
+from scipy.stats import pearsonr
 
 def read_csv_file(file_path):
     data = []
@@ -21,7 +20,40 @@ header = life_expectancy[0]
 life_expectancy = life_expectancy[1:]
 life_expectancy_numeric = np.array([[np.nan if val == '' else float(val) for val in row[1:]] for row in life_expectancy], dtype=np.float64)
 
-y = life_expectancy_numeric[:, -4]
-X = life_expectancy_numeric[:, :-4]
+column_means = np.nanmean(life_expectancy_numeric, axis=0)
+life_expectancy_numeric = np.where(np.isnan(life_expectancy_numeric), column_means, life_expectancy_numeric)
 
-LifeTrain, LifeTest, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+y = life_expectancy_numeric[:, -4]
+X = life_expectancy_numeric[:, 1:-3]
+
+
+column_names = header[1:-3] + header[-2:]
+
+print("Length of X[0]:", len(X[0]))
+print("Length of y:", len(y))
+print("Length of column_names:", len(column_names))
+print("Length of life_expectancy_numeric:", len(life_expectancy_numeric))
+print("Number of columns in life_expectancy_numeric:", life_expectancy_numeric.shape[1])
+
+if len(X) != len(y) or len(X[0]) != len(column_names):
+    raise ValueError("Length mismatch in arrays")
+
+df = pd.DataFrame(X, columns=column_names)
+
+df['Target'] = y
+
+correlation_df = df.corr()['Target'].drop('Target')
+
+correlation_df = correlation_df.sort_values(ascending=False)
+
+print(correlation_df)
+
+header = life_expectancy[0]
+
+correlation_coefficients = [pearsonr(life_expectancy_numeric[:, i], y)[0] for i in range(1, life_expectancy_numeric.shape[1])]
+
+correlation_df = pd.DataFrame({'Feature': header[5:-4] + header[-3:], 'Correlation': correlation_coefficients})
+
+correlation_df = correlation_df.sort_values(by='Correlation', ascending=False)
+
+print(correlation_df)
