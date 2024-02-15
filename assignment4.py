@@ -1,56 +1,38 @@
 import csv
 import numpy as np
+import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-import matplotlib.pyplot as plt
 
 def read_csv_file(file_path):
     data = []
     with open(file_path, 'r') as file:
         reader = csv.reader(file)
         for row in reader:
-            # Replace empty strings with NaN
-            cleaned_row = [np.nan if val == '' else val for val in row]
-            data.append(cleaned_row)
+            data.append(row)
     return data
 
 file_path = 'life_expectancy.csv'
 life_expectancy = read_csv_file(file_path)
 
-print(life_expectancy)
+header = life_expectancy[0]
+life_expectancy = life_expectancy[1:]
+life_expectancy_numeric = np.array([[np.nan if val == '' else float(val) for val in row[1:]] for row in life_expectancy], dtype=np.float64)
 
-# Convert to numpy array
-life_expectancy_numeric = np.array([[0 if val == '' else float(val) for val in row[1:]] for row in life_expectancy[1:]], dtype=np.float64)
-
-# Extract features (X) and target variable (y)
 X = life_expectancy_numeric[:, 1:-1]
 y = life_expectancy_numeric[:, -1]
 
-# Choose the column index for "Life Expectancy at Birth, both sexes (years)"
-life_expectancy_index = -4  # Assuming it's the third-to-last column
+LifeTrain, LifeTest, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
 
-# Select the specific column for the x-axis
-X_column = X[:, life_expectancy_index]
+columns = header[2:-4] + header[-3:]
 
-# Reshape the column for compatibility with LinearRegression
-X_column = X_column.reshape(-1, 1)
+print("Shape of LifeTrain:", LifeTrain.shape)
+print("Number of columns specified:", len(columns))
 
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X_column, y, test_size=0.25, random_state=42)
+df_train = pd.DataFrame(data=np.hstack((LifeTrain, y_train.reshape(-1, 1))), columns=columns + ['Life Expectancy at Birth, both sexes (years)'])
 
-# Plot the scatter plot
-plt.scatter(X_train, y_train, label='Training Set')
-plt.xlabel('Life Expectancy at Birth')
-plt.ylabel('Life Expectancy')
-plt.title('Scatter Plot and Linear Regression')
-plt.legend()
+correlation_coefficients = df_train.corr()['Life Expectancy at Birth, both sexes (years)'][:-1]
+max_correlation_variable = correlation_coefficients.abs().idxmax()
+max_correlation_coefficient = correlation_coefficients.abs().max()
 
-# Perform linear regression
-model = LinearRegression()
-model.fit(X_train, y_train)
-
-# Plot the regression line
-plt.plot(X_train, model.predict(X_train), color='red', linewidth=2, label='Linear Regression')
-
-plt.legend()
-plt.show()
+print(f"The variable '{max_correlation_variable}' has the strongest linear relationship with the target variable.")
+print(f"Pearson correlation coefficient: {max_correlation_coefficient}")
