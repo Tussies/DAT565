@@ -9,21 +9,25 @@ def read_csv_file(file_path):
     with open(file_path, 'r') as file:
         reader = csv.reader(file)
         for row in reader:
-            data.append(row)
+            # Replace empty strings with NaN
+            cleaned_row = [np.nan if val == '' else val for val in row]
+            data.append(cleaned_row)
     return data
 
 file_path = 'life_expectancy.csv'
 life_expectancy = read_csv_file(file_path)
 
+print(life_expectancy)
+
 # Convert to numpy array
-life_expectancy_numeric = np.array([[None if val == '' else float(val) for val in row[1:]] for row in life_expectancy[1:]], dtype=np.float64)
+life_expectancy_numeric = np.array([[0 if val == '' else float(val) for val in row[1:]] for row in life_expectancy[1:]], dtype=np.float64)
 
 # Extract features (X) and target variable (y)
 X = life_expectancy_numeric[:, 1:-1]
 y = life_expectancy_numeric[:, -1]
 
 # Choose the column index for "Life Expectancy at Birth, both sexes (years)"
-life_expectancy_index = -3  # Assuming it's the third-to-last column
+life_expectancy_index = -4  # Assuming it's the third-to-last column
 
 # Select the specific column for the x-axis
 X_column = X[:, life_expectancy_index]
