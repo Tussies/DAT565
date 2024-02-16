@@ -25,13 +25,18 @@ life_expectancy_numeric = np.array([[np.nan if val == '' else float(val) for val
 column_means = np.nanmean(life_expectancy_numeric, axis=0)
 life_expectancy_numeric = np.where(np.isnan(life_expectancy_numeric), column_means, life_expectancy_numeric)
 
+print(len(header))
+print(len(life_expectancy_numeric))
+
 y = life_expectancy_numeric[:, -4]
-X = life_expectancy_numeric[:, 1:-3]
+X = np.hstack([life_expectancy_numeric[:, :-4], life_expectancy_numeric[:, -3:]])
 
 
-column_names = header[1:-3] + header[-2:]
+column_names = header[1:-4] + header[-3:]
+print(column_names)
+print(y[0])
 
-print("Length of X[0]:", len(X[0]))
+print("Length of X[0]:", (X[0]).shape)
 print("Length of y:", len(y))
 print("Length of column_names:", len(column_names))
 print("Length of life_expectancy_numeric:", len(life_expectancy_numeric))
@@ -54,7 +59,7 @@ header = life_expectancy[0]
 
 correlation_coefficients = [pearsonr(life_expectancy_numeric[:, i], y)[0] for i in range(1, life_expectancy_numeric.shape[1])]
 
-correlation_df = pd.DataFrame({'Feature': header[5:-4] + header[-3:], 'Correlation': correlation_coefficients})
+correlation_df = pd.DataFrame({'Feature': column_names, 'Correlation': correlation_coefficients})
 
 correlation_df = correlation_df.sort_values(by='Correlation', ascending=False)
 
