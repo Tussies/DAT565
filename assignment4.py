@@ -49,15 +49,11 @@ df = pd.DataFrame(X, columns=column_names)
 
 df['Target'] = y
 
-correlation_df = df.corr()['Target'].drop('Target')
-
-correlation_df = correlation_df.sort_values(ascending=False)
-
-print(correlation_df)
-
 header = life_expectancy[0]
 
-correlation_coefficients = [pearsonr(life_expectancy_numeric[:, i], y)[0] for i in range(1, life_expectancy_numeric.shape[1])]
+print(X.shape)
+
+correlation_coefficients = [pearsonr(X[:, i], y)[0] for i in range(0, X.shape[1])]
 
 correlation_df = pd.DataFrame({'Feature': column_names, 'Correlation': correlation_coefficients})
 
