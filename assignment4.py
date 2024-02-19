@@ -61,7 +61,7 @@ correlation_df = correlation_df.sort_values(by='Correlation', ascending=False)
 
 print(correlation_df)
 
-X_negative = X[:, column_names.index('Crude Birth Rate (births per 1,000 population)')]
+X_negative = X[:, column_names.index('Median Age, as of 1 July (years)')]
 X_negative = X_negative.reshape(-1, 1)
 
 # Separate training and testing sets for negative case
@@ -73,7 +73,7 @@ y_pred_negative = model_negative.predict(X_test_negative)
 # Plot for negative case
 plt.scatter(X_test_negative, y_test_negative, color='black', label='Actual Data')
 plt.plot(X_test_negative, y_pred_negative, color='blue', linewidth=3, label='Linear Regression Model')
-plt.xlabel('Crude Birth Rate (births per 1,000 population)')
+plt.xlabel('Median Age, as of 1 July (years)')
 plt.ylabel('Life Expectancy')
 plt.title('Linear Regression Model (test set)')
 plt.legend()
@@ -98,4 +98,31 @@ print("Intercept:", intercept_negative)
 plt.show()
 
 
+#Assuming 'Median Age, as of 1 July (years)' is the variable of interest
+selected_variable_name = 'Median Age, as of 1 July (years)'
+selected_variable_index = column_names.index(selected_variable_name)
 
+#Visualize the original relationship
+plt.scatter(X_test_negative, y_test_negative, color='black', label='Actual Data')
+plt.xlabel(selected_variable_name)
+plt.ylabel('Life Expectancy')
+plt.title('Original Relationship')
+plt.show()
+
+
+#Square root transformation
+X_transformed = np.sqrt(X_test_negative)
+
+#Check the transformed relationship
+plt.scatter(X_transformed, y_test_negative, color='black', label='Actual Data')
+plt.xlabel(selected_variable_name + ' (Square Root Transformed)')
+plt.ylabel('Life Expectancy')
+plt.title('Transformed Relationship (Square Root Transformation)')
+plt.show()
+
+#Calculate the Pearson correlation coefficient before and after transformation
+correlation_before_transformation = pearsonr(X_test_negative, y_test_negative)[0]
+correlation_after_transformation = pearsonr(X_transformed, y_test_negative)[0]
+
+print("Pearson correlation coefficient before transformation:", correlation_before_transformation)
+print("Pearson correlation coefficient after transformation:", correlation_after_transformation)
