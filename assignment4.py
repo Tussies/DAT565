@@ -67,24 +67,23 @@ X_negative = X_negative.reshape(-1, 1)
 # Separate training and testing sets for negative case
 X_train_negative, X_test_negative, y_train_negative, y_test_negative = train_test_split(X_negative, y, test_size=0.2, random_state=42)
 model_negative = LinearRegression()
-model_negative.fit(X_train_negative, y_train_negative)
-y_pred_negative = model_negative.predict(X_train_negative)
+model_negative.fit(X_test_negative, y_test_negative)
+y_pred_negative = model_negative.predict(X_test_negative)
 
 # Plot for negative case
-plt.scatter(X_train_negative, y_train_negative, color='black', label='Actual Data')
-plt.plot(X_train_negative, y_pred_negative, color='blue', linewidth=3, label='Linear Regression Model')
+plt.scatter(X_test_negative, y_test_negative, color='black', label='Actual Data')
+plt.plot(X_test_negative, y_pred_negative, color='blue', linewidth=3, label='Linear Regression Model')
 plt.xlabel('Crude Birth Rate (births per 1,000 population)')
 plt.ylabel('Life Expectancy')
-plt.title('Linear Regression Model (Negative Case)')
+plt.title('Linear Regression Model (test set)')
 plt.legend()
-plt.show()
 
 # Train the negative model
 model_negative = LinearRegression()
 model_negative.fit(X_train_negative, y_train_negative)
 
 # Calculate R² for the negative model
-r_squared_negative = model_negative.score(X_train_negative, y_train_negative)
+r_squared_negative = model_negative.score(X_test_negative, y_test_negative)
 
 # Get the coefficients and intercept for the negative model
 coefficients_negative = model_negative.coef_
@@ -96,6 +95,7 @@ print("Coefficient of determination (R²):", r_squared_negative)
 print("Coefficient of model:", coefficients_negative)
 print("Intercept:", intercept_negative)
 
+plt.show()
 
 
 
