@@ -90,39 +90,31 @@ coefficients_negative = model_negative.coef_
 intercept_negative = model_negative.intercept_
 
 # Print the results for the negative case
-
 print("Coefficient of determination (R²):", r_squared_negative)
 print("Coefficient of model:", coefficients_negative)
 print("Intercept:", intercept_negative)
 
 plt.show()
 
-
-#Assuming 'Median Age, as of 1 July (years)' is the variable of interest
 selected_variable_name = 'Median Age, as of 1 July (years)'
 selected_variable_index = column_names.index(selected_variable_name)
 
-#Visualize the original relationship
 plt.scatter(X_test_negative, y_test_negative, color='black', label='Actual Data')
 plt.xlabel(selected_variable_name)
 plt.ylabel('Life Expectancy')
 plt.title('Original Relationship')
 plt.show()
 
-
-#Square root transformation
 X_transformed = np.sqrt(X_test_negative)
 
-#Check the transformed relationship
 plt.scatter(X_transformed, y_test_negative, color='black', label='Actual Data')
 plt.xlabel(selected_variable_name + ' (Square Root Transformed)')
 plt.ylabel('Life Expectancy')
 plt.title('Transformed Relationship (Square Root Transformation)')
 plt.show()
 
-#Calculate the Pearson correlation coefficient before and after transformation
-correlation_before_transformation = pearsonr(X_test_negative, y_test_negative)[0]
-correlation_after_transformation = pearsonr(X_transformed, y_test_negative)[0]
+correlation_before_transformation_sqrt_list = [pearsonr(X_test_negative[:, i], y_test_negative)[0] for i in range(X_test_negative.shape[1])]
+correlation_after_transformation_sqrt_list = [pearsonr(X_transformed[:, i], y_test_negative)[0] for i in range(X_transformed.shape[1])]
 
-print("Pearson correlation coefficient before transformation:", correlation_before_transformation)
-print("Pearson correlation coefficient after transformation:", correlation_after_transformation)
+print("Pearson correlation coefficients before transformation (square root):", correlation_before_transformation_sqrt_list)
+print("Pearson correlation coefficients after transformation (square root):", correlation_after_transformation_sqrt_list)
