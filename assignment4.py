@@ -65,7 +65,7 @@ X_negative = X[:, column_names.index('Crude Birth Rate (births per 1,000 populat
 X_negative = X_negative.reshape(-1, 1)
 
 # Separate training and testing sets for negative case
-X_train_negative, X_test_negative, y_train_negative, y_test_negative = train_test_split(X_negative, y, test_size=0.2, random_state=42)
+X_train_negative, X_test_negative, y_train_negative, y_test_negative = train_test_split(X_negative, y, test_size=0.25, random_state=42)
 model_negative = LinearRegression()
 model_negative.fit(X_test_negative, y_test_negative)
 y_pred_negative = model_negative.predict(X_test_negative)
@@ -80,7 +80,7 @@ plt.legend()
 
 # Train the negative model
 model_negative = LinearRegression()
-model_negative.fit(X_train_negative, y_train_negative)
+model_negative.fit(X_test_negative, y_test_negative)
 
 # Calculate R² for the negative model
 r_squared_negative = model_negative.score(X_test_negative, y_test_negative)
