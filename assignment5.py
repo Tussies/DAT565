@@ -1,6 +1,5 @@
 import pandas as pd
-
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 
 def read_tsv_file(file_path):
     return pd.read_csv(file_path, header=None, delimiter='\t').values.tolist()
@@ -8,13 +7,13 @@ def read_tsv_file(file_path):
 file_path = 'seeds.tsv'
 data = read_tsv_file(file_path)
 
-df = pd.DataFrame(data)
+features = [row[:-1] for row in data]
+labels = [row[-1] for row in data]
 
-scaler = MinMaxScaler()
-data_normalized_minmax = scaler.fit_transform(df)
+scaler = StandardScaler()
+normalized_features = scaler.fit_transform(features)
 
-data_normalized_minmax = data_normalized_minmax.tolist()
+normalized_data = [list(normalized_features[i]) + [labels[i]] for i in range(len(normalized_features))]
 
-for row in data_normalized_minmax:
+for row in normalized_data:
     print(row)
-
