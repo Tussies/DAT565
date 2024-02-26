@@ -31,23 +31,23 @@ for k in range(1, 4):
     inertia = kmeans.inertia_
     inertias.append(inertia)
 
-    rand_index = adjusted_rand_score(true_labels, clusters)
-    rand_indices.append(rand_index)
-
     best_accuracy = 0.0
+    best_permutation = None
+
     for perm_mapping in permutations(range(k)):
         mapped_clusters = [perm_mapping[c] for c in clusters]
         accuracy = accuracy_score(true_labels, mapped_clusters)
-        best_accuracy = max(best_accuracy, accuracy)
+
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
+            best_permutation = perm_mapping
 
     accuracies.append(best_accuracy)
 
     print(f"Results for k={k}:")
     print(f"Inertia: {inertia}")
-    print(f"Rand Index: {rand_index}")
-    print(f"Best Accuracy: {best_accuracy}\n")
+    print(f"Best Accuracy: {best_accuracy} (Best Permutation: {best_permutation})\n")
 
-print("All Rand Indices:", rand_indices)
 print("All Accuracies:", accuracies)
 
 plt.plot(range(1, 4), inertias, marker='o')
