@@ -3,6 +3,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.random_projection import GaussianRandomProjection
 from umap import UMAP
 import matplotlib.pyplot as plt
+import umap
 
 def read_tsv_file(file_path):
     return pd.read_csv(file_path, header=None, delimiter='\t').values.tolist()
