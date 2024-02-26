@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+from sklearn.random_projection import GaussianRandomProjection
 import matplotlib.pyplot as plt
 
 def read_tsv_file(file_path):
@@ -18,20 +19,39 @@ normalized_data = [list(normalized_features[i]) + [labels[i]] for i in range(len
 
 for row in normalized_data:
     print(row)
-column_1 = [row[3] for row in normalized_data]
-column_2 = [row[4] for row in normalized_data]
+
+column_4 = [row[3] for row in normalized_data]
+column_5 = [row[4] for row in normalized_data]
 column_8 = [row[7] for row in normalized_data]
 
 fig = plt.figure(figsize=(10, 8))
 ax = fig.add_subplot(111, projection='3d')
 
-scatter = ax.scatter(column_1, column_2, column_8, c=column_8, cmap='viridis')
+scatter = ax.scatter(column_4, column_5, column_8, c=column_8, cmap='viridis')
 
-ax.set_xlabel('Column 1')
-ax.set_ylabel('Column 2')
-ax.set_zlabel('Column 8')
+ax.set_xlabel('Column 4, Length of kernel')
+ax.set_ylabel('Column 5, Width of kernel')
+ax.set_zlabel('Column 8, Numerical class label')
 
 cbar = fig.colorbar(scatter)
-cbar.set_label('Column 8')
+cbar.set_label('Column 8, Numerical class label')
 
+plt.title('3D Scatter Plot')
+plt.show()
+
+random_projection = GaussianRandomProjection(n_components=2)
+projected_features = random_projection.fit_transform(normalized_features)
+
+projected_data = [list(projected_features[i]) + [labels[i]] for i in range(len(projected_features))]
+
+column_1 = [row[0] for row in projected_data]
+column_2 = [row[1] for row in projected_data]
+
+plt.figure(figsize=(10, 8))
+plt.scatter(column_1, column_2, c=labels, cmap='viridis')
+plt.xlabel('Column 4, Length of kernel (Projected Dimension 1)')
+plt.ylabel('Column 5, Width of kernel (Projected Dimension 2)')
+plt.title('2D Scatter Plot')
+
+plt.colorbar(label='Column 8, Numerical class label')
 plt.show()
