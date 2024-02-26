@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.random_projection import GaussianRandomProjection
+from umap import UMAP
 import matplotlib.pyplot as plt
 
 def read_tsv_file(file_path):
@@ -51,7 +52,24 @@ plt.figure(figsize=(10, 8))
 plt.scatter(column_1, column_2, c=labels, cmap='viridis')
 plt.xlabel('Column 4, Length of kernel (Projected Dimension 1)')
 plt.ylabel('Column 5, Width of kernel (Projected Dimension 2)')
-plt.title('2D Scatter Plot')
+plt.title('2D Scatter Plot with Gaussian Random Projection')
+
+plt.colorbar(label='Column 8, Numerical class label')
+plt.show()
+
+umap_reducer = UMAP(n_components=2)
+umap_features = umap_reducer.fit_transform(normalized_features)
+
+umap_data = [list(umap_features[i]) + [labels[i]] for i in range(len(umap_features))]
+
+umap_column_1 = [row[0] for row in umap_data]
+umap_column_2 = [row[1] for row in umap_data]
+
+plt.figure(figsize=(10, 8))
+plt.scatter(umap_column_1, umap_column_2, c=labels, cmap='viridis')
+plt.xlabel('Column 4, Length of kernel (Dimension 1)')
+plt.ylabel('Column 5, Width of kernel (Dimension 2)')
+plt.title('2D Scatter Plot with UMAP Dimensionality Reduction')
 
 plt.colorbar(label='Column 8, Numerical class label')
 plt.show()
