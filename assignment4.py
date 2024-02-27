@@ -14,6 +14,7 @@ def read_csv_file(file_path):
         for row in reader:
             data.append(row)
     return data
+#hej
 
 file_path = 'life_expectancy.csv'
 life_expectancy = read_csv_file(file_path)
