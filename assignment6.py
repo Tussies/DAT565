@@ -5,52 +5,51 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 from torchvision.datasets import MNIST
 
+# Define the CNN model
+class CNN(nn.Module):
+    def __init__(self):
+        super(CNN, self).__init__()
+        self.conv1 = nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1)
+        self.relu1 = nn.ReLU()
+        self.maxpool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.conv2 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
+        self.relu2 = nn.ReLU()
+        self.maxpool2 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.flatten = nn.Flatten()
+        self.fc1 = nn.Linear(128 * 7 * 7, 256)
+        self.relu3 = nn.ReLU()
+        self.fc2 = nn.Linear(256, 10)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.relu1(x)
+        x = self.maxpool1(x)
+        x = self.conv2(x)
+        x = self.relu2(x)
+        x = self.maxpool2(x)
+        x = self.flatten(x)
+        x = self.fc1(x)
+        x = self.relu3(x)
+        x = self.fc2(x)
+        return x
+
+# Data loading and transformations
 transform = transforms.Compose([transforms.ToTensor()])
 train_dataset = MNIST(root='./data', train=True, download=True, transform=transform)
 test_dataset = MNIST(root='./data', train=False, download=True, transform=transform)
 
-for i in range(len(train_dataset)):
-    img, label = train_dataset[i]
-    assert img.shape == (1, 28, 28), f"Invalid dimensions for training image {i+1}"
-    assert img.min() >= 0 and img.max() <= 1, f"Invalid pixel values for training image {i+1}"
-
-for i in range(len(test_dataset)):
-    img, label = test_dataset[i]
-    assert img.shape == (1, 28, 28), f"Invalid dimensions for test image {i+1}"
-    assert img.min() >= 0 and img.max() <= 1, f"Invalid pixel values for test image {i+1}"
-
-class ComplexNN(nn.Module):
-    def __init__(self, input_size, hidden_size1, hidden_size2, output_size):
-        super(ComplexNN, self).__init__()
-        self.fc1 = nn.Linear(input_size, hidden_size1)
-        self.relu1 = nn.ReLU()
-        self.fc2 = nn.Linear(hidden_size1, hidden_size2)
-        self.relu2 = nn.ReLU()
-        self.fc3 = nn.Linear(hidden_size2, output_size)
-
-    def forward(self, x):
-        x = x.view(x.size(0), -1)
-        x = self.fc1(x)
-        x = self.relu1(x)
-        x = self.fc2(x)
-        x = self.relu2(x)
-        x = self.fc3(x)
-        return x
-
-input_size = 28 * 28
-hidden_size1 = 500
-hidden_size2 = 300
-output_size = 10
-
-model = ComplexNN(input_size, hidden_size1, hidden_size2, output_size)
+# Model, optimizer, and criterion
+model = CNN()
 optimizer = optim.SGD(model.parameters(), lr=0.01, weight_decay=1e-4)
 criterion = nn.CrossEntropyLoss()
 
+# Data loaders
 batch_size = 64
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-num_epochs = 100
+# Training loop
+num_epochs = 70
 for epoch in range(num_epochs):
     model.train()
     for data in train_loader:
@@ -74,13 +73,10 @@ for epoch in range(num_epochs):
             correct += (predicted == labels).sum().item()
 
     accuracy = correct / total
-    print(f'Epoch {epoch+1}/{num_epochs}, Validation Accuracy: {accuracy * 100:.2f}%')
+    print(f'Epoch {epoch + 1}/{num_epochs}, Validation Accuracy: {accuracy * 100:.2f}%')
 
+# Display model parameters
 print(f'\nParameters:')
-print(f'Input Size: {input_size}')
-print(f'Hidden Size 1: {hidden_size1}')
-print(f'Hidden Size 2: {hidden_size2}')
-print(f'Output Size: {output_size}')
 print(f'Learning Rate: {optimizer.param_groups[0]["lr"]}')
 print(f'Weight Decay (L2 Regularization): {optimizer.param_groups[0]["weight_decay"]}')
 print(f'Batch Size: {batch_size}')
